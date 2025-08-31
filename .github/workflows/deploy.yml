@@ -1,0 +1,32 @@
+name: Build and Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main   # or your default branch
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repo
+      - uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20' # use your project Node version
+
+      # Step 3: Install dependencies
+      - run: npm ci
+
+      # Step 4: Build the app
+      - run: npm run build    # ensure this generates your static site in "build" or "dist"
+
+      # Step 5: Deploy to GitHub Pages
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages    # target branch for GitHub Pages
+          folder: build       # change "build" to your output folder (e.g., "dist") if needed
