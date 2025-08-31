@@ -1,35 +1,62 @@
-const CACHE_NAME = 'gemini-maze-race-cache-v1';
+const CACHE_NAME = 'gemini-maze-race-cache-v6';
 const ASSETS_TO_CACHE = [
-    '/',
-    '/index.html',
-    '/splash.png',
-    '/icons/icon-192x192.png',
-    '/icons/icon-512x512.png',
-    '/sounds/ui-click.mp3',
-    '/sounds/start-game.mp3',
-    '/sounds/move-pawn.mp3',
-    '/sounds/place-wall.mp3',
-    '/sounds/win-game.mp3',
-    '/sounds/lose-game.mp3',
-    '/sounds/timer-tick.mp3',
-    '/sounds/error.mp3'
+    './',
+    'index.html',
+    'splash.png',
+    'icons/icon-192x192.png',
+    'icons/icon-512x512.png',
+    'sounds/ui-click.mp3',
+    'sounds/start-game.mp3',
+    'sounds/move-pawn.mp3',
+    'sounds/place-wall.mp3',
+    'sounds/win-game.mp3',
+    'sounds/lose-game.mp3',
+    'sounds/timer-tick.mp3',
+    'sounds/error.mp3',
+    'home-page-background.png',
+    // Add all source files that will be fetched by the browser
+    'index.tsx',
+    'App.tsx',
+    'types.ts',
+    'constants.ts',
+    'services/geminiService.ts',
+    'services/localAiService.ts',
+    'services/onlineService.ts',
+    'services/authService.ts',
+    'services/soundService.ts',
+    'hooks/useGameLogic.ts',
+    'utils/pathfinding.ts',
+    'components/Modal.tsx',
+    'components/PlayerInfo.tsx',
+    'components/GameBoard.tsx',
+    'components/AiChatTooltip.tsx',
+    'components/WallPlacementGuide.tsx',
+    'components/HelpModal.tsx',
+    'components/GoogleSignInModal.tsx',
+    'components/AnimatedMenuBackground.tsx'
 ];
 
-// Install event: cache the application shell
+// Install event: cache the application shell and take control immediately
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then(cache => {
                 console.log('Service Worker: Caching App Shell');
-                return cache.addAll(ASSETS_TO_CACHE);
+                // Use a separate addAll for critical path, and allow non-critical to fail gracefully
+                const criticalAssets = ['./', 'index.html', 'index.tsx', 'App.tsx'];
+                cache.addAll(criticalAssets);
+                return cache.addAll(ASSETS_TO_CACHE).catch(error => {
+                    console.warn('Service Worker: Caching non-critical assets failed, but proceeding.', error);
+                });
             })
             .catch(error => {
-                console.error('Failed to cache app shell:', error);
+                console.error('Failed to cache critical app shell:', error);
             })
     );
+    self.skipWaiting();
 });
 
-// Activate event: clean up old caches
+// Activate event: clean up old caches and claim clients
 self.addEventListener('activate', event => {
     event.waitUntil(
         caches.keys().then(cacheNames => {
@@ -40,7 +67,7 @@ self.addEventListener('activate', event => {
                         return caches.delete(cacheName);
                     }
                 })
-            );
+            ).then(() => self.clients.claim());
         })
     );
 });
@@ -48,7 +75,7 @@ self.addEventListener('activate', event => {
 // Fetch event: serve from cache, fallback to network, and cache new resources
 self.addEventListener('fetch', event => {
     // We only want to handle GET requests
-    if (event.request.method !== 'GET') {
+    if (event.request.method !== 'GET' || !event.request.url.startsWith('http')) {
         return;
     }
     
