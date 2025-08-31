@@ -19,7 +19,7 @@ jobs:
           node-version: '20' # use your project Node version
 
       # Step 3: Install dependencies
-      - run: npm ci
+      - run: npm install
 
       # Step 4: Build the app
       - run: npm run build    # ensure this generates your static site in "build" or "dist"
