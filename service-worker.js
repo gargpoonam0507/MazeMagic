@@ -1,22 +1,21 @@
-const CACHE_NAME = 'gemini-maze-race-cache-v2';
+const CACHE_NAME = 'gemini-maze-race-cache-v1';
 const ASSETS_TO_CACHE = [
-    './',
-    './index.html',
-    './splash.png',
-    './icons/icon-192x192.png',
-    './icons/icon-512x512.png',
-    './sounds/ui-click.mp3',
-    './sounds/start-game.mp3',
-    './sounds/move-pawn.mp3',
-    './sounds/place-wall.mp3',
-    './sounds/win-game.mp3',
-    './sounds/lose-game.mp3',
-    './sounds/timer-tick.mp3',
-    './sounds/error.mp3',
-    './home-page-background.png'
+    '/',
+    '/index.html',
+    '/splash.png',
+    '/icons/icon-192x192.png',
+    '/icons/icon-512x512.png',
+    '/sounds/ui-click.mp3',
+    '/sounds/start-game.mp3',
+    '/sounds/move-pawn.mp3',
+    '/sounds/place-wall.mp3',
+    '/sounds/win-game.mp3',
+    '/sounds/lose-game.mp3',
+    '/sounds/timer-tick.mp3',
+    '/sounds/error.mp3'
 ];
 
-// Install event: cache the application shell and take control immediately
+// Install event: cache the application shell
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
@@ -28,10 +27,9 @@ self.addEventListener('install', event => {
                 console.error('Failed to cache app shell:', error);
             })
     );
-    self.skipWaiting();
 });
 
-// Activate event: clean up old caches and claim clients
+// Activate event: clean up old caches
 self.addEventListener('activate', event => {
     event.waitUntil(
         caches.keys().then(cacheNames => {
@@ -42,7 +40,7 @@ self.addEventListener('activate', event => {
                         return caches.delete(cacheName);
                     }
                 })
-            ).then(() => self.clients.claim());
+            );
         })
     );
 });
